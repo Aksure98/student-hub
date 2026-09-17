@@ -1,16 +1,10 @@
 import dotenv from "dotenv";
-import express from "express";
-import mongoose from "mongoose";
+import app from "./app.js";
+import connectDB from "./config/database.js";
 
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 4000;
-
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
-
 const mongoUri = process.env.MONGO_URI;
 
 if (!mongoUri) {
@@ -18,14 +12,15 @@ if (!mongoUri) {
   process.exit(1);
 }
 
-mongoose.connect(mongoUri)
-  .then(() => {
-    console.log("Connected to MongoDB");
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB", err);
-    process.exit(1);
+const startServer = async () => {
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
+};
+
+startServer().catch((err) => {
+  console.error("Failed to start server", err);
+  process.exit(1);
+});
